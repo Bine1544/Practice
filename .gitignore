@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+Prac_00/Debug/vc142.pdb
+*.ipch
+*.tlog
+*.log
+*.recipe
+*.pdb
+*.idb
+*.opendb
+*.db-shm
+*.db-wal
+*.db
+*.ilk
+Prac_00/.vs/Prac_00/v16/.suo
