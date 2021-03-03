@@ -4,7 +4,7 @@
 #include <iostream>
 #include <conio.h>
 #include "math.h"
-
+#include <math.h>
 int main()
 {
 	//std::cout << "Hello World!\n";
@@ -12,6 +12,8 @@ int main()
 	int  d = Sub(1, 2);
 	int  f = Mul(2, 3);
 	int g = Div(2, 1);
+	float h = Sqt(2.0f);
+	int j = Pow(2, 3);
 	printf("%d %d %d %d\n", c, d, f, g);
 	printf("Hello world\n");
 	printf("Hello world\n");
