@@ -3,10 +3,15 @@
 
 #include <iostream>
 #include <conio.h>
+#include "math.h"
 
 int main()
 {
     //std::cout << "Hello World!\n";
+    int  c = add(1, 2);
+    int  d = sub(1, 2);
+    int  f = mul(2, 3);
+    int g = Div(2, 1);
     printf("Hello world\n");
 	printf("Hello world\n");
     _getch();
