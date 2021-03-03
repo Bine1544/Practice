@@ -8,6 +8,7 @@ int main()
 {
     //std::cout << "Hello World!\n";
     printf("Hello world\n");
+	printf("Hello world\n");
     _getch();
     return 0;
 }
