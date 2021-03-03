@@ -2,10 +2,14 @@
 //
 
 #include <iostream>
+#include <conio.h>
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    //std::cout << "Hello World!\n";
+    printf("Hello world\n");
+    _getch();
+    return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
