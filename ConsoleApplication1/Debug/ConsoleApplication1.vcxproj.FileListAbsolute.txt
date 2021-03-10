@@ -1,0 +1,2 @@
+C:\Dev\Github\Practice\ConsoleApplication1\Debug\ConsoleApplication1.exe
+C:\Dev\Github\Practice\ConsoleApplication1\Debug\ConsoleApplication1.pdb
