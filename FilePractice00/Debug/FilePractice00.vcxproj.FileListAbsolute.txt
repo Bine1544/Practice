@@ -1,0 +1,2 @@
+C:\Dev\Github\Practice\FilePractice00\Debug\FilePractice00.exe
+C:\Dev\Github\Practice\FilePractice00\Debug\FilePractice00.pdb
