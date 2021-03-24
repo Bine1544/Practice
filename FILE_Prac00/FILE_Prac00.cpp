@@ -7,26 +7,30 @@
 
 int main()
 {
-	char Text = NULL;
-	FILE* imp = fopen("aaa.txt", "rt");
-	FILE* copy = fopen("abc.txt", "wt");
-	if (0 == imp)
+	
+	FILE* Src = fopen("aaa.txt", "rt");
+	FILE* Dest = fopen("abc.txt", "wt");
+	if (nullptr == Src)
 	{
 		return 0;
 	}
-	else if (0 == copy)
+	else if (nullptr == Dest)
 	{
+		fclose(Src);
 		return 0;
 	}
-	while (EOF!=(Text = fgetc(imp)))
+
+	int Res = 0;
+	while (EOF!=(Res = fgetc(Src)))
 	{
-		fputc(Text, copy);
+		char c = (char)Res;
+		fputc(c, Dest);
 	}
 	
 	
 
-	fclose(imp);
-	fclose(copy);
+	fclose(Src);
+	fclose(Dest);
 	//std::cout << "Hello World!\n";
 	return 0;
 }
