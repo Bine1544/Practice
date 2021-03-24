@@ -13,21 +13,10 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Math">
-      <UniqueIdentifier>{92b0f160-8468-4a50-b615-f9b23ad07c60}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Prac_00.cpp">
+    <ClCompile Include="FilePractice00.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="math.cpp">
-      <Filter>Math</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="math.h">
-      <Filter>Math</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
