@@ -1,0 +1,2 @@
+C:\Dev\Github\Practice\StructurePractice_001\Debug\StructurePractice_001.exe
+C:\Dev\Github\Practice\StructurePractice_001\Debug\StructurePractice_001.pdb

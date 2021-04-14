@@ -1,0 +1,2 @@
+C:\Dev\Github\Practice\Practice_WIN32_00\Debug\Practice_WIN32_00.exe
+C:\Dev\Github\Practice\Practice_WIN32_00\Debug\Practice_WIN32_00.pdb

@@ -1,0 +1,2 @@
+C:\Dev\Github\Practice\StructTest_00\Debug\StructTest_00.exe
+C:\Dev\Github\Practice\StructTest_00\Debug\StructTest_00.pdb
