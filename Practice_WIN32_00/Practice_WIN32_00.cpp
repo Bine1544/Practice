@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "Practice_WIN32_00.h"
 #include <stdio.h>
+#include <windowsx.h>
 
 #include "DDraw.h"
 #define MAX_LOADSTRING 100
@@ -39,7 +40,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     HANDLE hThread = GetCurrentThread();
-    //SetThreadAffinityMask(hThread, 0b111);
+    //SetThreadAffinityMask(hThread, 0b1);
 
     srand(GetTickCount());
     
@@ -79,6 +80,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             }
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+            Game_Run();
         }
         else
         {
@@ -92,10 +94,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 void Game_Run()
 {
-
+    OnDraw();
 }
 
-
+void OnUpdateWindowSize()
+{
+    int a;
+}
 
 //
 //  FUNCTION: MyRegisterClass()
@@ -184,10 +189,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_KEYDOWN:
+        
+        switch (wParam)
         {
-            int a = 0;
+        case VK_ESCAPE:
+            break;
+        case VK_LEFT:
+            MoveLeft();
+            break;
+        case VK_RIGHT:
+            MoveRight();
+            break;
+        case VK_UP:
+            MoveUp();
+            break;
+        case VK_DOWN:
+            MoveDown();
+            break;
+
         }
+        
+        
         break;
+    case WM_MOUSEMOVE:
+    {
+        int iMouseX = GET_X_LPARAM(lParam);
+        int iMouseY = GET_Y_LPARAM(lParam);
+        //SetDDrawCursorPos(iMouseX, iMouseY);
+    }
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -196,6 +225,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hWnd, &ps);
         }
         break;
+    case WM_SIZE:
+    {
+        OnUpdateWindowSize();
+        break;
+    }
+    case WM_MOVE:
+    {
+        UpdateBltRect();
+        break;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
