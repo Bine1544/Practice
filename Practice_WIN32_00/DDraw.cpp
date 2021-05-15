@@ -14,11 +14,52 @@ DWORD g_dwHeight = 0;
 int g_iCursorX = 0;
 int g_iCursorY = 0;
 
+
+BOOL g_bUp = FALSE;
+BOOL g_bDown = FALSE;
+BOOL g_bLeft = FALSE;
+BOOL g_bRight = FALSE;
+
 void SetDDrawCursorPos(int x, int y)
 {
 	g_iCursorX = x+4;
 	g_iCursorY = y;
 }
+
+void OnUp()
+{
+	g_bUp = TRUE;
+}
+void OnDown()
+{
+	g_bDown = TRUE;
+}
+void OnLeft()
+{
+	g_bLeft = TRUE;
+}
+void OnRight()
+{
+	g_bRight = TRUE;
+}
+
+void OffUp()
+{
+	g_bUp = FALSE;
+}
+void OffDown()
+{
+	g_bDown = FALSE;
+}
+void OffLeft()
+{
+	g_bLeft = FALSE;
+}
+void OffRight()
+{
+	g_bRight = FALSE;
+}
+
 void MoveLeft()
 {
 	g_iCursorX--;
@@ -171,6 +212,43 @@ void ClearBackbuffer()
 	g_pDDBack->Unlock(nullptr);
 
 }
+
+ULONGLONG g_PrvGameFrameTick = 0;
+int g_iSpeed = 4;
+
+void OnGameFrame()
+{
+	ULONGLONG CurTick = GetTickCount64();
+	if (CurTick - g_PrvGameFrameTick > 16)
+	{
+		if (TRUE == g_bUp)
+		{
+			g_iCursorY -= g_iSpeed;
+		}
+
+		if (TRUE == g_bDown)
+		{
+			g_iCursorY += g_iSpeed;
+		}
+
+		if (TRUE == g_bLeft)
+		{
+			g_iCursorX -= g_iSpeed;
+		}
+
+		if (TRUE == g_bRight)
+		{
+			g_iCursorX += g_iSpeed;
+		}
+		g_PrvGameFrameTick = CurTick;
+	}
+	else
+	{
+		int a = 0;
+	}
+}
+ULONGLONG g_FrameCount = 0;
+ULONGLONG g_PrvDrawTick = 0;
 void OnDraw()
 {
 	//ClearBackbuffer();
@@ -189,21 +267,26 @@ void OnDraw()
     
 	DWORD dwColor = 0xff00ff00;
 
-	if (g_iCursorX+1 < 0)
+	
+	//
+	int screen_width = ddsc.dwWidth-1;
+	int screen_height = ddsc.dwHeight-1;
+
+	if (g_iCursorX < 0)
 	{
 		g_iCursorX = 0;
 	}
-	if (g_iCursorX+1 >= ddsc.dwWidth)
+	if (g_iCursorX >= screen_width)
 	{
-		g_iCursorX = ddsc.dwWidth - 1;
+		g_iCursorX = screen_width - 1;
 	}
-	if (g_iCursorY+1 < 0)
+	if (g_iCursorY < 0)
 	{
 		g_iCursorY = 0;
 	}
-	if (g_iCursorY+1 >= ddsc.dwHeight)
+	if (g_iCursorY >= screen_height)
 	{
-		g_iCursorY = ddsc.dwHeight - 1;
+		g_iCursorY = screen_height - 1;
 	}
 	char* pDest = (char*)ddsc.lpSurface + g_iCursorY * ddsc.lPitch + g_iCursorX * 4;
 	*(DWORD*)pDest = dwColor;
@@ -229,6 +312,21 @@ void OnDraw()
 	g_pDDBack->Unlock(nullptr);
 
 	g_pDDPrimary->Blt(&g_rcWindow, g_pDDBack, nullptr, DDBLT_WAIT, nullptr);
+
+	// check FPS
+	g_FrameCount++;
+	ULONGLONG CurTick = GetTickCount64();
+	if (CurTick - g_PrvDrawTick >= 1000)
+	{
+		DWORD FPS = (DWORD)g_FrameCount;
+		WCHAR	wchFPS[32];
+		swprintf_s(wchFPS, L"FPS: %u\n", FPS);
+		OutputDebugStringW(wchFPS);
+		g_PrvDrawTick = CurTick;
+		g_FrameCount = 0;
+
+	}
+	
 }
 
 void UpdateBltRect()
