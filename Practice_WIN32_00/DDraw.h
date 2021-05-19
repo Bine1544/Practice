@@ -22,3 +22,11 @@ void MoveLeft();
 void MoveRight();
 void MoveUp();
 void MoveDown();
+
+BOOL GetFontSize(int* piOutWidth, int* piOutHeight, const WCHAR* wchString, DWORD dwStrLen, HDC hDC);
+void WriteText(const WCHAR* wchTxt, DWORD dwLen, int x, int y, DWORD dwColor, HDC hDC);
+BOOL BeginGDI(HDC* pOutDC);
+void DrawInfo(HDC hDC);
+void EndGDI(HDC hDC);
+
+void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeight, DWORD dwColor);

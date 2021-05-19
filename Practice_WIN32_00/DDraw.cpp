@@ -249,6 +249,33 @@ void OnGameFrame()
 }
 ULONGLONG g_FrameCount = 0;
 ULONGLONG g_PrvDrawTick = 0;
+DWORD g_dwFPS = 0;
+
+void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeight, DWORD dwColor)
+{
+	if (sx < 0)
+	{
+		int offset = 0 - sx;
+		sx = 0;
+		iWidth -= offset;
+	}
+	if (iWidth < 0)
+		return;
+	if (sx + iWidth >= g_dwWidth)
+	{
+		iWidth -= sx + iWidth - g_dwWidth;
+	}
+	for (int i = 0; i<iWidth; i++)
+	{
+		// a
+		
+		int x = sx + i;
+	
+		// x,sy <- Á¡À» Âï´Â´Ù.
+		*(DWORD*)(pBits + 4 * x + dwPitch * sy) = dwColor;
+	}
+}
+
 void OnDraw()
 {
 	//ClearBackbuffer();
@@ -272,6 +299,7 @@ void OnDraw()
 	int screen_width = ddsc.dwWidth-1;
 	int screen_height = ddsc.dwHeight-1;
 
+	/*
 	if (g_iCursorX < 0)
 	{
 		g_iCursorX = 0;
@@ -288,6 +316,9 @@ void OnDraw()
 	{
 		g_iCursorY = screen_height - 1;
 	}
+	*/
+	
+	/*
 	char* pDest = (char*)ddsc.lpSurface + g_iCursorY * ddsc.lPitch + g_iCursorX * 4;
 	*(DWORD*)pDest = dwColor;
 	pDest = (char*)ddsc.lpSurface + g_iCursorY * ddsc.lPitch + (g_iCursorX + 1)* 4;
@@ -295,7 +326,8 @@ void OnDraw()
 	pDest = (char*)ddsc.lpSurface + (g_iCursorY+1) * ddsc.lPitch + g_iCursorX * 4;
 	*(DWORD*)pDest = dwColor;
 	pDest = (char*)ddsc.lpSurface + (g_iCursorY+1) * ddsc.lPitch + (g_iCursorX + 1) * 4;
-	*(DWORD*)pDest = dwColor;
+	*(DWORD*)pDest = dwColor;*/
+	DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 1, dwColor);
 	/*
 	for (DWORD y = 0; y < ddsc.dwHeight; y++)
 	{
@@ -309,6 +341,15 @@ void OnDraw()
 			*(DWORD*)pDest = dwColor;// 0xfff0f000;
 		}
 	}*/
+	HDC hDC;
+	BeginGDI(&hDC);
+	//const WCHAR* wchTxt = g_wchInfoTxt;
+	//DWORD dwLen = g_dwInfoTxtLen;
+
+	WCHAR wchTxt[16] = {};
+	DWORD dwLen = swprintf_s(wchTxt,L"%u",g_dwFPS);
+	WriteText(wchTxt, dwLen, 0, 0, 0xffff0000, hDC);
+	EndGDI(hDC);
 	g_pDDBack->Unlock(nullptr);
 
 	g_pDDPrimary->Blt(&g_rcWindow, g_pDDBack, nullptr, DDBLT_WAIT, nullptr);
@@ -318,9 +359,9 @@ void OnDraw()
 	ULONGLONG CurTick = GetTickCount64();
 	if (CurTick - g_PrvDrawTick >= 1000)
 	{
-		DWORD FPS = (DWORD)g_FrameCount;
+		g_dwFPS = (DWORD)g_FrameCount;
 		WCHAR	wchFPS[32];
-		swprintf_s(wchFPS, L"FPS: %u\n", FPS);
+		swprintf_s(wchFPS, L"FPS: %u\n", g_dwFPS);
 		OutputDebugStringW(wchFPS);
 		g_PrvDrawTick = CurTick;
 		g_FrameCount = 0;
@@ -328,6 +369,78 @@ void OnDraw()
 	}
 	
 }
+
+BOOL GetFontSize(int* piOutWidth, int* piOutHeight, const WCHAR* wchString, DWORD dwStrLen, HDC hDC)
+{
+	BOOL	bResult = FALSE;
+	*piOutWidth = 1;
+	*piOutHeight = 1;
+
+	SIZE	strSize;
+	BOOL bGetSize = GetTextExtentPoint32W(hDC, wchString, dwStrLen, &strSize);
+
+
+	if (bGetSize)
+	{
+		*piOutWidth = strSize.cx;
+		*piOutHeight = strSize.cy;
+		bResult = TRUE;
+	}
+	return bResult;
+}
+
+void WriteText(const WCHAR* wchTxt, DWORD dwLen, int x, int y, DWORD dwColor, HDC hDC)
+{
+	SetBkMode(hDC, TRANSPARENT);
+
+	RECT	textRect, texRectSide[4];
+	int		iWidth = 0;
+	int		iHeight = 0;
+	GetFontSize(&iWidth, &iHeight, wchTxt, dwLen, hDC);
+
+	textRect.left = x;
+	textRect.top = y;
+	textRect.right = textRect.left + iWidth;
+	textRect.bottom = textRect.top + iHeight;
+
+	texRectSide[0].left = textRect.left - 1;
+	texRectSide[0].top = textRect.top - 1;
+	texRectSide[0].right = textRect.right - 1;
+	texRectSide[0].bottom = textRect.bottom - 1;
+
+
+	texRectSide[1].left = textRect.left + 1;
+	texRectSide[1].top = textRect.top - 1;
+	texRectSide[1].right = textRect.right + 1;
+	texRectSide[1].bottom = textRect.bottom - 1;
+
+	texRectSide[2].left = textRect.left + 1;
+	texRectSide[2].top = textRect.top + 1;
+	texRectSide[2].right = textRect.right + 1;
+	texRectSide[2].bottom = textRect.bottom + 1;
+
+	texRectSide[3].left = textRect.left - 1;
+	texRectSide[3].top = textRect.top + 1;
+	texRectSide[3].right = textRect.right - 1;
+	texRectSide[3].bottom = textRect.bottom + 1;
+
+	SetTextColor(hDC, 0x00000000);
+	for (DWORD i = 0; i < 4; i++)
+	{
+		DrawText(hDC, wchTxt, -1, &texRectSide[i], DT_LEFT | DT_WORDBREAK);
+	}
+
+	DWORD r = (dwColor & 0x00ff0000) >> 16;
+	DWORD g = (dwColor & 0x0000ff00) >> 8;
+	DWORD b = (dwColor & 0x000000ff);
+
+	COLORREF color = RGB(r, g, b);
+	SetTextColor(hDC, color);
+	DrawText(hDC, wchTxt, -1, &textRect, DT_LEFT | DT_WORDBREAK);
+
+
+}
+
 
 void UpdateBltRect()
 {
@@ -337,6 +450,37 @@ void UpdateBltRect()
 	ClientToScreen(g_hWndForDDraw, (POINT*)&g_rcWindow.right);
 }
 
+BOOL BeginGDI(HDC* pOutDC)
+{
+	BOOL	bResult = FALSE;
+	HDC	hDC = nullptr;
+
+	HRESULT hr = g_pDDBack->GetDC(&hDC);
+	if (FAILED(hr))
+	{
+	#ifdef _DEBUG
+		__debugbreak();
+	#endif
+		goto lb_return;
+	}
+	bResult = TRUE;
+	*pOutDC = hDC;
+
+lb_return:
+	return bResult;
+}
+void DrawInfo(HDC hDC)
+{
+	//const WCHAR* wchTxt = g_wchInfoTxt;
+	//DWORD dwLen = g_dwInfoTxtLen;
+
+	//WriteText(wchTxt, dwLen, 0, 0, 0xffff0000, hDC);
+}
+void EndGDI(HDC hDC)
+{
+	//ProcessGDI(hDC);
+	g_pDDBack->ReleaseDC(hDC);
+}
 
 void CleanupDDraw()
 {
