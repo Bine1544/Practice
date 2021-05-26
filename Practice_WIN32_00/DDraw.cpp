@@ -265,12 +265,9 @@ void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeigh
 	{
 		iWidth -= sx + iWidth - g_dwWidth;
 	}
-	for (int i = 0; i<iWidth; i++)
-	{
-		// a
-		
-		int x = sx + i;
 	
+	for (int x = sx; x < sx + iWidth; x++)
+	{	
 		// x,sy <- Á¡À» Âï´Â´Ù.
 		*(DWORD*)(pBits + 4 * x + dwPitch * sy) = dwColor;
 	}
