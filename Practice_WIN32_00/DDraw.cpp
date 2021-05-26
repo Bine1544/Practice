@@ -265,11 +265,27 @@ void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeigh
 	{
 		iWidth -= sx + iWidth - g_dwWidth;
 	}
-	
-	for (int x = sx; x < sx + iWidth; x++)
-	{	
-		// x,sy <- Á¡À» Âï´Â´Ù.
-		*(DWORD*)(pBits + 4 * x + dwPitch * sy) = dwColor;
+
+	if (sy < 0)
+	{
+		int offset = 0 - sy;
+		sy = 0;
+		iHeight -= offset;
+	}
+	if (iHeight < 0)
+		return;
+	if (sy + iHeight > g_dwHeight - 1)
+	{
+		iHeight -= (iHeight + sy) - g_dwHeight;
+			// (iHeight + sy) - g_dwHeight
+	}
+	for (int y = sy; y < sy + iHeight; y++)
+	{
+		for (int x = sx; x < sx + iWidth; x++)
+		{
+			// x,sy <- Á¡À» Âï´Â´Ù.
+			*(DWORD*)(pBits + 4 * x + dwPitch * y) = dwColor;
+		}
 	}
 }
 
@@ -324,7 +340,7 @@ void OnDraw()
 	*(DWORD*)pDest = dwColor;
 	pDest = (char*)ddsc.lpSurface + (g_iCursorY+1) * ddsc.lPitch + (g_iCursorX + 1) * 4;
 	*(DWORD*)pDest = dwColor;*/
-	DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 1, dwColor);
+	DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 16, dwColor);
 	/*
 	for (DWORD y = 0; y < ddsc.dwHeight; y++)
 	{
