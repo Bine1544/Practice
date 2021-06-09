@@ -30,3 +30,4 @@ void DrawInfo(HDC hDC);
 void EndGDI(HDC hDC);
 
 void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeight, DWORD dwColor);
+void DrawImage(char* pDestBits, DWORD dwPitch, char* pSrcImage, DWORD dwSrcImageWidth, DWORD dwSrcImageHeight, int iDestX, int iDestY);

@@ -13,6 +13,7 @@ struct PIXEL24
     BYTE b;
 };
 #pragma pack(pop)
+DWORD* LoadTGAImage(const char* szFileName, DWORD* pdwOutWidth, DWORD* pdwOutHeight);
 
 void SetPixel24(PIXEL24* pBits, DWORD x, DWORD y, DWORD width, DWORD height);
 #pragma pack(push,1)

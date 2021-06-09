@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <Windows.h>
 #include "DDraw.h"
+#include "TGA.h"
 
 IDirectDraw7* g_pDD7 = nullptr;
 IDirectDrawSurface7* g_pDDPrimary = nullptr;
@@ -14,6 +15,10 @@ DWORD g_dwHeight = 0;
 int g_iCursorX = 0;
 int g_iCursorY = 0;
 
+// Load Image
+DWORD g_dwImageWidth = 0;
+DWORD g_dwImageHeight = 0;
+DWORD* g_pImage = nullptr;
 
 BOOL g_bUp = FALSE;
 BOOL g_bDown = FALSE;
@@ -151,7 +156,7 @@ BOOL InitializeDDraw(HWND hWnd)
 #endif
 		goto lb_return;
 	}
-	
+	g_pImage = LoadTGAImage("galaga_player.tga", &g_dwImageWidth, &g_dwImageHeight);
 	bResult = TRUE;
 
 lb_return:
@@ -289,6 +294,80 @@ void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeigh
 	}
 }
 
+void DrawImage(char* pDestBits, DWORD dwPitch, char* pSrcImage, DWORD dwSrcImageWidth, DWORD dwSrcImageHeight, int iDestX, int iDestY)
+{
+	DWORD dwColorKey = *(DWORD*)pSrcImage;
+
+
+	/*for (int y = 0; y < dwImageHeight; y++)
+	{
+		for (int x = 0; x < dwImageWidth; x++)
+		{
+			//Src pixel
+			DWORD dwColor = *(pImage + y * dwImageWidth + x);
+			DWORD* pDest = (DWORD*)(pBits + (sx + x) * 4 + (y + sy) * dwPitch);
+			*pDest = dwColor;
+		}
+	}*/
+	int iSrcX = 0;
+	int iSrcY = 0;
+
+	int iDestWidth = (int)dwSrcImageWidth;
+	int iDestHeight = (int)dwSrcImageHeight;
+
+	if (iDestX < 0)
+	{
+		iDestWidth += iDestX;
+		iSrcX -= iDestX;
+		iDestX = 0;
+		
+	}
+
+	if (iDestY < 0)
+	{
+		iDestHeight += iDestY;
+		iSrcY -= iDestY;
+		iDestY = 0;
+	}
+
+	if (iDestY + iDestHeight > (int)g_dwHeight)
+	{
+		iDestHeight = (int)g_dwHeight - iDestY;
+	}
+	if (iDestHeight <= 0)
+	{
+		return;
+	}
+	if ((iDestX + iDestWidth) > (int)g_dwWidth)
+	{
+		iDestWidth = (int)g_dwWidth - iDestX;
+	}
+	if (iDestWidth <= 0)
+	{
+		return;
+	}
+	// (sx < 0)
+	// sx = 0
+	// 
+	
+	
+
+	for (int y = 0; y < iDestHeight; y++)
+	{
+		for (int x = 0; x < iDestWidth; x++)
+		{
+			//Src pixel
+			
+			DWORD *pSrc = (DWORD*)(pSrcImage + (iSrcX + x) * 4 + (iSrcY + y) * (dwSrcImageWidth*4));
+			if (*pSrc == dwColorKey)
+				continue;
+			DWORD* pDest = (DWORD*)(pDestBits + (iDestX + x) * 4 + (iDestY + y) * dwPitch);
+			*pDest = *pSrc;
+			
+		}
+	}
+}
+
 void OnDraw()
 {
 	//ClearBackbuffer();
@@ -340,7 +419,9 @@ void OnDraw()
 	*(DWORD*)pDest = dwColor;
 	pDest = (char*)ddsc.lpSurface + (g_iCursorY+1) * ddsc.lPitch + (g_iCursorX + 1) * 4;
 	*(DWORD*)pDest = dwColor;*/
-	DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 16, dwColor);
+	
+	//DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 16, dwColor);
+	DrawImage((char*)ddsc.lpSurface, ddsc.lPitch, (char*)g_pImage, g_dwImageWidth, g_dwImageHeight, g_iCursorX, g_iCursorY);
 	/*
 	for (DWORD y = 0; y < ddsc.dwHeight; y++)
 	{
