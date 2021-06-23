@@ -15,10 +15,18 @@ DWORD g_dwHeight = 0;
 int g_iCursorX = 0;
 int g_iCursorY = 0;
 
+struct FLIGHT_OBJECT
+{
+	DWORD dwImageWidth;
+	DWORD dwImageHeight;
+	DWORD* pImage;
+	int iPosX;
+	int iPosY;
+};
 // Load Image
-DWORD g_dwImageWidth = 0;
-DWORD g_dwImageHeight = 0;
-DWORD* g_pImage = nullptr;
+
+FLIGHT_OBJECT* g_pPlayer = nullptr;
+FLIGHT_OBJECT* g_pBackGround = nullptr;
 
 BOOL g_bUp = FALSE;
 BOOL g_bDown = FALSE;
@@ -27,7 +35,7 @@ BOOL g_bRight = FALSE;
 
 void SetDDrawCursorPos(int x, int y)
 {
-	g_iCursorX = x+4;
+	g_iCursorX = x + 4;
 	g_iCursorY = y;
 }
 
@@ -86,35 +94,35 @@ void MoveDown()
 BOOL InitializeDDraw(HWND hWnd)
 {
 	BOOL	bResult = FALSE;
-	
+
 	g_hWndForDDraw = hWnd;
-	
+
 	DDSURFACEDESC2 ddsd = {};
 	ddsd.dwSize = sizeof(DDSURFACEDESC2);
 	ddsd.dwFlags = DDSD_CAPS;
 	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-	
-	
+
+
 	if (DD_OK != DirectDrawCreate(nullptr, &g_pDD, nullptr))
 	{
 		MessageBox(hWnd, L"Fail to Create DirectDraw", L"Error", MB_OK);
 		goto lb_return;
 	}
-	
-	
+
+
 	if (DD_OK != g_pDD->QueryInterface(IID_IDirectDraw7, (LPVOID*)&g_pDD7))
 	{
 		MessageBox(hWnd, L"Fail to Create DirectDraw 4", L"Error", MB_OK);
 		goto lb_return;
 	}
-	
+
 	HRESULT hr = g_pDD7->SetCooperativeLevel(hWnd, DDSCL_NORMAL);
 	if (FAILED(hr))
 	{
 		MessageBox(g_hWndForDDraw, L"Failed to Set CooperativeLevel", L"ERROR", MB_OK);
 		goto lb_return;
 	}
-	
+
 
 
 	// Create the primary surface.
@@ -124,7 +132,7 @@ BOOL InitializeDDraw(HWND hWnd)
 		MessageBox(g_hWndForDDraw, L"Failed to CreateSurface", L"ERROR", MB_OK);
 		goto lb_return;
 	}
-	
+
 	// Create a clipper object which handles all our clipping for cases when
 	// our window is partially obscured by other windows. This is not needed
 	// for apps running in fullscreen mode.
@@ -140,23 +148,33 @@ BOOL InitializeDDraw(HWND hWnd)
 	// to release our local reference to it.
 	g_pClipper->SetHWnd(0, hWnd);
 	g_pDDPrimary->SetClipper(g_pClipper);
-	
+
 	ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
 	ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
 
 	UpdateBltRect();
-	
+
 	DWORD dwWidth = g_rcWindow.right - g_rcWindow.left;
 	DWORD dwHeight = g_rcWindow.bottom - g_rcWindow.top;
 
 	if (!CreateBackBuffer(dwWidth, dwHeight))
 	{
-#ifdef _DEBUG
+	#ifdef _DEBUG
 		__debugbreak();
-#endif
+	#endif
 		goto lb_return;
 	}
-	g_pImage = LoadTGAImage("galaga_player.tga", &g_dwImageWidth, &g_dwImageHeight);
+	// load backgroud image
+	g_pBackGround = (FLIGHT_OBJECT*)malloc(sizeof(FLIGHT_OBJECT));
+	g_pBackGround->pImage = LoadTGAImage("IMG.tga", &g_pBackGround->dwImageWidth, &g_pBackGround->dwImageHeight);
+
+	g_pPlayer = (FLIGHT_OBJECT*)malloc(sizeof(FLIGHT_OBJECT));
+    g_pPlayer->pImage = LoadTGAImage("galaga_player.tga", &g_pPlayer->dwImageWidth, &g_pPlayer->dwImageHeight);
+
+	g_pBackGround->iPosX = 0;
+	g_pBackGround->iPosY = 0;
+	g_pPlayer->iPosX = 0;
+	g_pPlayer->iPosY = 0;
 	bResult = TRUE;
 
 lb_return:
@@ -251,6 +269,10 @@ void OnGameFrame()
 	{
 		int a = 0;
 	}
+	g_pPlayer->iPosX = g_iCursorX;
+	g_pPlayer->iPosY = g_iCursorY;
+	g_pBackGround->iPosX = g_iCursorX*2;
+	g_pBackGround->iPosY = g_iCursorY*2;
 }
 ULONGLONG g_FrameCount = 0;
 ULONGLONG g_PrvDrawTick = 0;
@@ -282,7 +304,7 @@ void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeigh
 	if (sy + iHeight > g_dwHeight - 1)
 	{
 		iHeight -= (iHeight + sy) - g_dwHeight;
-			// (iHeight + sy) - g_dwHeight
+		// (iHeight + sy) - g_dwHeight
 	}
 	for (int y = sy; y < sy + iHeight; y++)
 	{
@@ -296,19 +318,72 @@ void DrawRect(char* pBits, DWORD dwPitch, int sx, int sy, int iWidth, int iHeigh
 
 void DrawImage(char* pDestBits, DWORD dwPitch, char* pSrcImage, DWORD dwSrcImageWidth, DWORD dwSrcImageHeight, int iDestX, int iDestY)
 {
+	DWORD ColorKey = *(DWORD*)pSrcImage;
+	DWORD dwDestImageWidth = dwSrcImageWidth;
+	DWORD dwDestImageHeight = dwSrcImageHeight;
+
+	int SrcX = 0;
+	int SrcY = 0;
+	if (iDestX + (int)dwDestImageWidth <= 0)
+		return;
+	if (iDestX + dwSrcImageWidth > g_dwWidth)
+	{
+		dwDestImageWidth -= (iDestX + dwSrcImageWidth) - g_dwWidth;
+	}
+	if (iDestX < 0)
+	{
+		dwDestImageWidth += iDestX;
+		SrcX = 0 - iDestX;
+		iDestX = 0;
+	}
+	
+
+	if (iDestY + (int)dwDestImageHeight <= 0)
+		return;
+		
+	if (iDestY + dwSrcImageHeight > g_dwHeight)
+	{
+		dwDestImageHeight -= (iDestY + dwSrcImageHeight - g_dwHeight);
+	}
+
+	if (iDestY < 0)
+	{
+		dwDestImageHeight += iDestY;
+		SrcY = 0 - iDestY;
+		iDestY = 0;
+	}
+
+	
+ 	if ((int)dwDestImageWidth <= 0 || (int)dwDestImageHeight <= 0)
+	{
+		return;
+	}
+	
+	for (int y = 0; y < dwDestImageHeight; y++)
+	{
+		for (int x = 0; x < dwDestImageWidth; x++)
+		{
+			DWORD srcImg = *(DWORD*)(pSrcImage + (x+SrcX) * 4 + (y+SrcY) * dwSrcImageWidth * 4);
+			if (srcImg == ColorKey)
+				continue;
+			DWORD* destImg = (DWORD*)(pDestBits + (iDestX + x) * 4 + ((iDestY + y) * dwPitch));
+			*destImg = srcImg;
+		}
+	}
+	/*
 	DWORD dwColorKey = *(DWORD*)pSrcImage;
 
 
-	/*for (int y = 0; y < dwImageHeight; y++)
-	{
-		for (int x = 0; x < dwImageWidth; x++)
-		{
-			//Src pixel
-			DWORD dwColor = *(pImage + y * dwImageWidth + x);
-			DWORD* pDest = (DWORD*)(pBits + (sx + x) * 4 + (y + sy) * dwPitch);
-			*pDest = dwColor;
-		}
-	}*/
+	//for (int y = 0; y < dwImageHeight; y++)
+	//{
+	//	for (int x = 0; x < dwImageWidth; x++)
+	//	{
+	//		//Src pixel
+	//		DWORD dwColor = *(pImage + y * dwImageWidth + x);
+	//		DWORD* pDest = (DWORD*)(pBits + (sx + x) * 4 + (y + sy) * dwPitch);
+	//		*pDest = dwColor;
+	//	}
+	//}
 	int iSrcX = 0;
 	int iSrcY = 0;
 
@@ -320,7 +395,7 @@ void DrawImage(char* pDestBits, DWORD dwPitch, char* pSrcImage, DWORD dwSrcImage
 		iDestWidth += iDestX;
 		iSrcX -= iDestX;
 		iDestX = 0;
-		
+
 	}
 
 	if (iDestY < 0)
@@ -348,24 +423,25 @@ void DrawImage(char* pDestBits, DWORD dwPitch, char* pSrcImage, DWORD dwSrcImage
 	}
 	// (sx < 0)
 	// sx = 0
-	// 
-	
-	
+	//
+
+
 
 	for (int y = 0; y < iDestHeight; y++)
 	{
 		for (int x = 0; x < iDestWidth; x++)
 		{
 			//Src pixel
-			
+
 			DWORD *pSrc = (DWORD*)(pSrcImage + (iSrcX + x) * 4 + (iSrcY + y) * (dwSrcImageWidth*4));
 			if (*pSrc == dwColorKey)
 				continue;
 			DWORD* pDest = (DWORD*)(pDestBits + (iDestX + x) * 4 + (iDestY + y) * dwPitch);
 			*pDest = *pSrc;
-			
+
 		}
 	}
+	*/
 }
 
 void OnDraw()
@@ -377,19 +453,19 @@ void OnDraw()
 	ddsc.dwSize = sizeof(DDSURFACEDESC2);
 
 	g_pDDBack->Lock(nullptr, &ddsc, DDLOCK_WAIT | DDLOCK_WRITEONLY, nullptr);
-	
+
 	for (DWORD y = 0; y < ddsc.dwHeight; y++)
 	{
 		memset((char*)ddsc.lpSurface + y * ddsc.lPitch, 0, 4 * ddsc.dwWidth);
 	}
 
-    
+
 	DWORD dwColor = 0xff00ff00;
 
-	
+
 	//
-	int screen_width = ddsc.dwWidth-1;
-	int screen_height = ddsc.dwHeight-1;
+	int screen_width = ddsc.dwWidth - 1;
+	int screen_height = ddsc.dwHeight - 1;
 
 	/*
 	if (g_iCursorX < 0)
@@ -409,7 +485,7 @@ void OnDraw()
 		g_iCursorY = screen_height - 1;
 	}
 	*/
-	
+
 	/*
 	char* pDest = (char*)ddsc.lpSurface + g_iCursorY * ddsc.lPitch + g_iCursorX * 4;
 	*(DWORD*)pDest = dwColor;
@@ -419,9 +495,10 @@ void OnDraw()
 	*(DWORD*)pDest = dwColor;
 	pDest = (char*)ddsc.lpSurface + (g_iCursorY+1) * ddsc.lPitch + (g_iCursorX + 1) * 4;
 	*(DWORD*)pDest = dwColor;*/
-	
+
 	//DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 16, dwColor);
-	DrawImage((char*)ddsc.lpSurface, ddsc.lPitch, (char*)g_pImage, g_dwImageWidth, g_dwImageHeight, g_iCursorX, g_iCursorY);
+	DrawImage((char*)ddsc.lpSurface,ddsc.lPitch, (char*)g_pBackGround->pImage, g_pBackGround->dwImageWidth,g_pBackGround->dwImageHeight,g_pBackGround->iPosX, g_pBackGround->iPosY);
+	DrawImage((char*)ddsc.lpSurface, ddsc.lPitch, (char*)g_pPlayer->pImage, g_pPlayer->dwImageWidth, g_pPlayer->dwImageHeight, g_pPlayer->iPosX, g_pPlayer->iPosY);
 	/*
 	for (DWORD y = 0; y < ddsc.dwHeight; y++)
 	{
@@ -441,7 +518,7 @@ void OnDraw()
 	//DWORD dwLen = g_dwInfoTxtLen;
 
 	WCHAR wchTxt[16] = {};
-	DWORD dwLen = swprintf_s(wchTxt,L"%u",g_dwFPS);
+	DWORD dwLen = swprintf_s(wchTxt, L"%u", g_dwFPS);
 	WriteText(wchTxt, dwLen, 0, 0, 0xffff0000, hDC);
 	EndGDI(hDC);
 	g_pDDBack->Unlock(nullptr);
@@ -461,7 +538,7 @@ void OnDraw()
 		g_FrameCount = 0;
 
 	}
-	
+
 }
 
 BOOL GetFontSize(int* piOutWidth, int* piOutHeight, const WCHAR* wchString, DWORD dwStrLen, HDC hDC)
@@ -604,10 +681,10 @@ void CleanupDDraw()
 		g_pDD->Release();
 		g_pDD = nullptr;
 	}
-/*	CleanupBackBuffer();
+	/*	CleanupBackBuffer();
 
-	
 
-	
-	*/
+
+
+		*/
 }

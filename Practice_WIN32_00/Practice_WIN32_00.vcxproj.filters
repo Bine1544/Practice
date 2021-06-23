@@ -22,6 +22,9 @@
     <Filter Include="Image">
       <UniqueIdentifier>{edc617aa-599f-44d4-a86a-a919793e87a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mob">
+      <UniqueIdentifier>{ae12492f-40f4-4aaa-a222-2878b45f8163}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -45,6 +48,9 @@
     <ClInclude Include="TGA.h">
       <Filter>Image</Filter>
     </ClInclude>
+    <ClInclude Include="Mob.h">
+      <Filter>Mob</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Practice_WIN32_00.cpp">
@@ -58,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="TGA.cpp">
       <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="Mob.cpp">
+      <Filter>Mob</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
