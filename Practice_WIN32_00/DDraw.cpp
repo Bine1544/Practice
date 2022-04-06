@@ -497,7 +497,7 @@ void OnDraw()
 	*(DWORD*)pDest = dwColor;*/
 
 	//DrawRect((char*)ddsc.lpSurface, ddsc.lPitch, g_iCursorX, g_iCursorY, 16, 16, dwColor);
-	DrawImage((char*)ddsc.lpSurface,ddsc.lPitch, (char*)g_pBackGround->pImage, g_pBackGround->dwImageWidth,g_pBackGround->dwImageHeight,g_pBackGround->iPosX, g_pBackGround->iPosY);
+	//DrawImage((char*)ddsc.lpSurface,ddsc.lPitch, (char*)g_pBackGround->pImage, g_pBackGround->dwImageWidth,g_pBackGround->dwImageHeight,g_pBackGround->iPosX, g_pBackGround->iPosY);
 	DrawImage((char*)ddsc.lpSurface, ddsc.lPitch, (char*)g_pPlayer->pImage, g_pPlayer->dwImageWidth, g_pPlayer->dwImageHeight, g_pPlayer->iPosX, g_pPlayer->iPosY);
 	/*
 	for (DWORD y = 0; y < ddsc.dwHeight; y++)
